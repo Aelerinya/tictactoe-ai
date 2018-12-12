@@ -29,12 +29,12 @@ class morpion_game():
 
     def run(self):
         while self.turn < 9:
-            previous_state = self.flatten_grid()
-
             player = self.players[self.turn % 2]
+            previous_state = [1 if item not in [0, player.icon] else item for item in self.flatten_grid()]
+
             reward = 0
             #Player do a move
-            move = player.play(self.flatten_grid(), player.icon)
+            move = player.play(previous_state, player.icon)
             if self.grid[move[0]][move[1]] == 0:
                 self.grid[move[0]][move[1]] = player.icon
             else:
@@ -56,18 +56,22 @@ class morpion_game():
         return tuple([item for sublist in self.grid for item in sublist])
 
 class morpion_player():
-    def __init__(self, name, icon):
+    def __init__(self, name, icon, human=False):
         self.dataset = []
         self.states = {}
         self.name = name
         self.icon = icon
+        self.human = human
 
     def play(self, state, player):
-        for i in [0, 3, 6]:
-            print(state[i : i + 3])
-        line = int(input("line:"))
-        column = int(input("column:"))
-        return (line, column)
+        if self.human:
+            for i in [0, 3, 6]:
+                print(state[i : i + 3])
+            line = int(input("line:"))
+            column = int(input("column:"))
+            return (line, column)
+        else:
+            return (random.randint(0, 2), random.randint(0, 2))
 
     def add_data(self, move):
         self.dataset.append(move)
@@ -83,6 +87,9 @@ def main():
     elif p2.name == winner:
         p1.add_data((game.flatten_grid(), -10))
         p2.add_data((game.flatten_grid(), 10))
+    else:
+        p1.add_data((game.flatten_grid(), 0))
+        p2.add_data((game.flatten_grid(), 0))
     print(f"Winner : {winner}")
     print(p1.dataset)
     print(p2.dataset)
