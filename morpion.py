@@ -21,15 +21,9 @@ class morpion_game():
                 return 1
 
         #Verify diagonals
-        diagonal = []
-        for i in range(0, 3):
-            diagonal.append(self.grid[i][i])
-        if diagonal == [player] * 3:
+        if [self.grid[i][i] for i in range(0, 3)] == [player] * 3:
             return 1
-        diagonal = []
-        for i in range(0, 3):
-            diagonal.append(self.grid[i][2 - i])
-        if diagonal == [player] * 3:
+        if [self.grid[i][2 - i] for i in range(0, 3)] == [player] * 3:
             return 1
 
         return 0
