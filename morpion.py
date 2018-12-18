@@ -31,6 +31,7 @@ class morpion_game():
             player = self.players[self.turn % 2]
             ennemy = self.players[(self.turn + 1) % 2]
             previous_state = self.flatten_grid(player)
+            previous_state_ennemy = self.flatten_grid(ennemy)
 
             reward = 0
             #Player do a move
@@ -40,16 +41,19 @@ class morpion_game():
             self.grid[move[0]][move[1]] = player.icon
             #Add new state to players dataset
             player.add_data((previous_state, self.flatten_grid(player)))
-            ennemy.add_data((previous_state, self.flatten_grid(ennemy)))
+            ennemy.add_data((previous_state_ennemy, self.flatten_grid(ennemy)))
             #Does the player win ?
             if self.is_winner(player.icon):
                 #Add win states
                 win_state = self.flatten_grid(player)
                 player.states[win_state] = 1
                 lose_state = self.flatten_grid(ennemy)
-                ennemy.states[lose_state] = -1
+                ennemy.states[lose_state] = -2
                 return player.name
             self.turn += 1
+        for player in self.players:
+            tie = self.flatten_grid(player)
+            player.states[tie] = -1
         return "Tie"
 
     def log(self):
@@ -77,7 +81,7 @@ class morpion_player():
             column = int(input("column:"))
             return (line, column)
         else:
-            if random.random() > self.epsilon:
+            if random.random() >= self.epsilon and self.trainable == True:
                 return self.greedy_play(state)
             else:
                 return (random.randint(0, 2), random.randint(0, 2))
@@ -96,7 +100,7 @@ class morpion_player():
                 if next_value > best_value:
                     best_value = next_value
                     best_move = m
-        print(f"State : {state} Best move : {best_move} = {best_value}")
+        #print(f"State : {state} Best move : {best_move} = {best_value}")
         #print(f"Choosen : {best_move}")
         return best_move
 
@@ -126,9 +130,10 @@ class morpion_player():
             increment = self.states[next_state] if (next_state in self.states) else 0
             self.states[state] += learning_rate * (increment - self.states[state])
         self.dataset = []
-        self.epsilon = self.epsilon * 0.9995 if (self.epsilon > 0.005) else 0.005
+        self.epsilon = self.epsilon * 0.99996 if (self.epsilon > 0.005) else 0.005
 
 def main():
+    #random.seed(1)
     stats = {}
     p1 = morpion_player("IA", "X")
     p2 = morpion_player("IA 2", "O")
@@ -139,17 +144,16 @@ def main():
         winner = game.run()
         #print(f"Winner : {winner}")
         #print(p1.dataset)
-        p1.train(0.01)
-        p2.train(0.01)
+        p1.train(0.005)
+        p2.train(0.005)
         if not winner in stats:
             stats[winner] = 1
         else:
             stats[winner] += 1
-    for i in p1.states:
-        if not p1.states[i] in [-1, 0, 1]:
-            print(f"{i} : {p1.states[i]}")
-    best_move = max(p1.states, key=p1.states.get)
-    print(f"{best_move} = {p1.states[best_move]}")
+    # for i in p1.states:
+    #     if not p1.states[i] in [-1, 0, 1]:
+    #         print(f"{i} : {p1.states[i]}")
+    p1.epsilon = 0
     print(f"number of states : {len(p1.states)}")
     print(stats)
     random_player = morpion_player("random", "R", False)
@@ -167,7 +171,9 @@ def main():
         print(f"{i} : {stats[i] / plays:.2f}")
     human = morpion_player("human", "H", False, True)
     while False:
-        game = morpion_game(p1, human)
+        players = [p1, human]
+        random.shuffle(players)
+        game = morpion_game(players[0], players[1])
         winner = game.run()
         print(f"Winner : {winner}")
 
