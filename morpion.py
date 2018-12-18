@@ -38,8 +38,9 @@ class morpion_game():
             while self.grid[move[0]][move[1]] != 0:
                 move = player.play(previous_state, player.icon)
             self.grid[move[0]][move[1]] = player.icon
-            #Add new state to player dataset
+            #Add new state to players dataset
             player.add_data((previous_state, self.flatten_grid(player)))
+            ennemy.add_data((previous_state, self.flatten_grid(ennemy)))
             #Does the player win ?
             if self.is_winner(player.icon):
                 #Add win states
@@ -95,7 +96,7 @@ class morpion_player():
                 if next_value > best_value:
                     best_value = next_value
                     best_move = m
-        #print(f"State : {state} Best move : {best_move} = {best_value}")
+        print(f"State : {state} Best move : {best_move} = {best_value}")
         #print(f"Choosen : {best_move}")
         return best_move
 
@@ -144,9 +145,9 @@ def main():
             stats[winner] = 1
         else:
             stats[winner] += 1
-    # for i in p1.states:
-    #     if not p1.states[i] in [-100, 0, 100]:
-    #         print(f"{i} : {p1.states[i]}")
+    for i in p1.states:
+        if not p1.states[i] in [-1, 0, 1]:
+            print(f"{i} : {p1.states[i]}")
     best_move = max(p1.states, key=p1.states.get)
     print(f"{best_move} = {p1.states[best_move]}")
     print(f"number of states : {len(p1.states)}")
