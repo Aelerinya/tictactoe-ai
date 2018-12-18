@@ -39,7 +39,7 @@ class morpion_game():
                 move = player.play(previous_state, player.icon)
             self.grid[move[0]][move[1]] = player.icon
             #Add new state to player dataset
-            player.add_data((previous_state, move, reward))
+            player.add_data((previous_state, self.flatten_grid(player)))
             #Does the player win ?
             if self.is_winner(player.icon):
                 #Add win states
@@ -121,7 +121,7 @@ class morpion_player():
             state = data[0]
             if not state in self.states:
                 self.states[state] = 0
-            next_state = self.get_next_state(state, data[1])
+            next_state = data[1]
             increment = self.states[next_state] if (next_state in self.states) else 0
             self.states[state] += learning_rate * (increment - self.states[state])
         self.dataset = []
@@ -137,6 +137,7 @@ def main():
         game = morpion_game(players[0], players[1])
         winner = game.run()
         #print(f"Winner : {winner}")
+        #print(p1.dataset)
         p1.train(0.01)
         p2.train(0.01)
         if not winner in stats:
