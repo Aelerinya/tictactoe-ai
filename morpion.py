@@ -83,8 +83,20 @@ class morpion_player():
         else:
             if random.random() >= self.epsilon and self.trainable == True:
                 return self.greedy_play(state)
+            elif self.trainable == True:
+                return self.explore_play(state)
             else:
                 return (random.randint(0, 2), random.randint(0, 2))
+
+    def explore_play(self, state):
+        moves = ((0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2))
+        for move in moves:
+            if self.is_valid(state, move):
+                next_state = self.get_next_state(state, move)
+                next_value = self.states[next_state] if (next_state in self.states) else 0
+                if next_value == 0:
+                    return move
+        return (random.randint(0, 2), random.randint(0, 2))
 
     def greedy_play(self, state):
         moves = ((0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2))
@@ -130,7 +142,7 @@ class morpion_player():
             increment = self.states[next_state] if (next_state in self.states) else 0
             self.states[state] += learning_rate * (increment - self.states[state])
         self.dataset = []
-        self.epsilon = self.epsilon * 0.99996 if (self.epsilon > 0.005) else 0.005
+        self.epsilon = self.epsilon * 0.99998 if (self.epsilon > 0.005) else 0.005
 
 def main():
     #random.seed(1)
@@ -158,14 +170,13 @@ def main():
     print(stats)
     random_player = morpion_player("random", "R", False)
     stats = {p1.name : 0, random_player.name : 0, "Tie" : 0}
-    plays = 1000
+    plays = 10000
     for i in range(0, plays):
         players = [p1, random_player]
         random.shuffle(players)
         game = morpion_game(players[0], players[1])
         winner = game.run()
         stats[winner] += 1
-    #print(p1.states)
     print(f"Win rates :")
     for i in stats:
         print(f"{i} : {stats[i] / plays:.2f}")
