@@ -29,7 +29,8 @@ class morpion_game():
     def run(self):
         while self.turn < 9:
             player = self.players[self.turn % 2]
-            previous_state = tuple([1 if item not in [0, player.icon] else item for item in self.flatten_grid()])
+            ennemy = self.players[(self.turn + 1) % 2]
+            previous_state = self.flatten_grid(player)
 
             reward = 0
             #Player do a move
@@ -42,11 +43,10 @@ class morpion_game():
             #Does the player win ?
             if self.is_winner(player.icon):
                 #Add win states
-                win_state = tuple([1 if item not in [0, player.icon] else item for item in self.flatten_grid()])
+                win_state = self.flatten_grid(player)
                 player.states[win_state] = 1
-                other = self.players[(self.turn + 1) % 2]
-                lose_state = tuple([1 if item not in [0, other.icon] else item for item in self.flatten_grid()])
-                other.states[lose_state] = -1
+                lose_state = self.flatten_grid(ennemy)
+                ennemy.states[lose_state] = -1
                 return player.name
             self.turn += 1
         return "Tie"
@@ -55,8 +55,8 @@ class morpion_game():
         for i in self.grid:
             print(i)
 
-    def flatten_grid(self):
-        return tuple([item for sublist in self.grid for item in sublist])
+    def flatten_grid(self, player):
+        return tuple([1 if item not in [0, player.icon] else item for sublist in self.grid for item in sublist])
 
 class morpion_player():
     def __init__(self, name, icon, trainable = True, human=False):
@@ -95,7 +95,7 @@ class morpion_player():
                 if next_value > best_value:
                     best_value = next_value
                     best_move = m
-        print(f"State : {state} Best move : {best_move} = {best_value}")
+        #print(f"State : {state} Best move : {best_move} = {best_value}")
         #print(f"Choosen : {best_move}")
         return best_move
 
@@ -152,7 +152,7 @@ def main():
     print(stats)
     random_player = morpion_player("random", "R", False)
     stats = {p1.name : 0, random_player.name : 0, "Tie" : 0}
-    plays = 10000
+    plays = 1000
     for i in range(0, plays):
         players = [p1, random_player]
         random.shuffle(players)
@@ -164,7 +164,7 @@ def main():
     for i in stats:
         print(f"{i} : {stats[i] / plays:.2f}")
     human = morpion_player("human", "H", False, True)
-    while True:
+    while False:
         game = morpion_game(p1, human)
         winner = game.run()
         print(f"Winner : {winner}")
