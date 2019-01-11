@@ -1,4 +1,4 @@
-#Tic Tac Toe AI in Python3
+# Tic Tac Toe AI in Python3
 
 This project implements an epsilon-greedy reinforcement learning algorithm to train an AI to play tic tac toe.
 
