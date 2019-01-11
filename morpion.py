@@ -144,32 +144,44 @@ class morpion_player():
         self.dataset = []
         self.epsilon = self.epsilon * 0.99998 if (self.epsilon > 0.005) else 0.005
 
+    def stop_training(self):
+        self.trainable = False
+
 def main():
-    #random.seed(1)
+    #Create players
     stats = {}
     p1 = morpion_player("IA", "X")
     p2 = morpion_player("IA 2", "O")
+
+    #The two AIs play against each other 10.000 times
     for i in range(0, 10000):
+        #Put players in random order
         players = [p1, p2]
         random.shuffle(players)
+
+        #Launch game
         game = morpion_game(players[0], players[1])
         winner = game.run()
-        #print(f"Winner : {winner}")
-        #print(p1.dataset)
+
+        #Train players on data they collected
         p1.train(0.005)
         p2.train(0.005)
+
+        #Keep track of win rates
         if not winner in stats:
             stats[winner] = 1
         else:
             stats[winner] += 1
-    # for i in p1.states:
-    #     if not p1.states[i] in [-1, 0, 1]:
-    #         print(f"{i} : {p1.states[i]}")
-    p1.epsilon = 0
-    print(f"number of states : {len(p1.states)}")
+
+    #Stop training of player 1
+    p1.stop_training()
+    #Print stats on training
     print(stats)
+
+    #Create a random player : no training
     random_player = morpion_player("random", "R", False)
     stats = {p1.name : 0, random_player.name : 0, "Tie" : 0}
+    #Play 10.000 matches between p1 ans the random player
     plays = 10000
     for i in range(0, plays):
         players = [p1, random_player]
@@ -177,9 +189,13 @@ def main():
         game = morpion_game(players[0], players[1])
         winner = game.run()
         stats[winner] += 1
+
+    #Display results
     print(f"Win rates :")
     for i in stats:
         print(f"{i} : {stats[i] / plays:.2f}")
+
+    #Create human controlled player to play against p1
     human = morpion_player("human", "H", False, True)
     while False:
         players = [p1, human]
